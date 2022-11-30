@@ -9,3 +9,5 @@
 .pio
 
 # End of https://www.toptal.com/developers/gitignore/api/platformio
+
+secrets.h

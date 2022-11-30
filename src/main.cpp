@@ -33,8 +33,10 @@ boolean fanStatusPantry;
 const int DHT_INSIDE_PIN = 5;
 const int DHT_OUTSIDE_PIN = 12;
 const int DHT_POWER_PIN = 2;
-const float DEW_POINT_THRESHOLD = 4.0;// in °C
+
+const float DEW_POINT_THRESHOLD = 4.0;// in K
 const float MIN_INSIDE_TEMPERATURE_CUTOFF = 8.0;// in °C
+const float MIN_OUTSIDE_TEMPERATURE_CUTOFF = -10.0;// in °C
 
 DHT dhtInside(DHT_INSIDE_PIN, DHT_TYPE);
 DHT dhtOutside(DHT_OUTSIDE_PIN, DHT_TYPE);
@@ -158,7 +160,7 @@ const unsigned long VENTILATION_INTERVAL = 30 * 60 * 1000; // in millis, default
 const unsigned long WAIT_INTERVAL = 90 * 60 * 1000; // in millis, default: 90 min
 
 unsigned long measurementTimestamp = 0;
-unsigned long stateStartTimeStamp;
+unsigned long stateStartTimeStamp = 0;
 
 enum states {
   NONE,
@@ -189,8 +191,9 @@ void measure () {
   // check for state transition
   boolean humidityDifferenceHigh = dewPointInside - dewPointOutside > DEW_POINT_THRESHOLD;
   boolean temperatureInsideTooLow = temperatureInside < MIN_INSIDE_TEMPERATURE_CUTOFF;
+  boolean temperatureOutsideTooLow = temperatureOutside < MIN_OUTSIDE_TEMPERATURE_CUTOFF;
 
-  boolean leaveStateToVentilate = humidityDifferenceHigh && !temperatureInsideTooLow;
+  boolean leaveStateToVentilate = humidityDifferenceHigh && !temperatureInsideTooLow &&  !temperatureOutsideTooLow;
    
   if (leaveStateToVentilate) {
     state = VENTILATING;
@@ -225,9 +228,10 @@ void ventilate () {
   // check for state transition
   boolean ventilationIntervalExpired = millis() > stateStartTimeStamp + VENTILATION_INTERVAL;
   boolean temperatureInsideTooLow = temperatureInside < MIN_INSIDE_TEMPERATURE_CUTOFF;
+  boolean temperatureOutsideTooLow = temperatureOutside < MIN_OUTSIDE_TEMPERATURE_CUTOFF;
   boolean humidityOutsideTooHigh = dewPointOutside > dewPointOutsideLastSwicthingTime + DEW_POINT_THRESHOLD;
 
-  boolean leaveStateToWaiting = ventilationIntervalExpired || temperatureInsideTooLow || humidityOutsideTooHigh;
+  boolean leaveStateToWaiting = ventilationIntervalExpired || temperatureInsideTooLow || temperatureOutsideTooLow || humidityOutsideTooHigh;
 
   if (leaveStateToWaiting) {
     Serial.println(String("ventilationIntervalExpired=") + ventilationIntervalExpired);
@@ -326,6 +330,9 @@ void setup() {
 void loop() {
   // run finite state machine
   switch (state) {  
+    case NONE:
+      state = MEASURING;
+      break;
     case MEASURING:
       measure();
       break;
