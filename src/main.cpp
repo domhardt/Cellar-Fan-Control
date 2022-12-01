@@ -201,7 +201,6 @@ void takeMeasurements () {
     printDebugInformation();
   }
 
-  Serial.println(String("finished function ") + __PRETTY_FUNCTION__ );
 }
 
 // for state machine
@@ -293,7 +292,7 @@ void wait () {
 
   // check for state transition
   boolean waitIntervalExpired = millis() > stateStartTimeStamp + WAIT_INTERVAL;
-
+ 
   boolean leaveStateToMeasuring = waitIntervalExpired;
 
   if (leaveStateToMeasuring) {
@@ -303,13 +302,11 @@ void wait () {
   if (state != priorState) {  // clean up on leaving a state
     Serial.println(String("leaving state ") + __PRETTY_FUNCTION__ );
   }
-
 }
 
 // for serial
 void initSerial () {
   Serial.begin(74480);
-  // yield();
   delay(500);
 
   while (!Serial);
