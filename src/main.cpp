@@ -1,11 +1,16 @@
 /*
- * Blink
- * Turns on an LED on for one second,
- * then off for one second, repeatedly.
+ * Cellar Fan Control
+ *
+ * implementation for ESP8266
+ * uses two DHT22 temperature and humidity sensors
+ * controls two WIFI sockets running TASMOTA firmware (e.g., Sonoff S2x)
+ * logs data to thingspeak
+ * logic based on finite state machine (FSM)
+ * 
+ * by Michael Domhardt
  */
 
 #include "Arduino.h"
-
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
 
 // for WIFI Manager library
@@ -38,6 +43,10 @@ const float DEW_POINT_THRESHOLD = 4.0;// in K
 const float MIN_INSIDE_TEMPERATURE_CUTOFF = 8.0;// in °C
 const float MIN_OUTSIDE_TEMPERATURE_CUTOFF = -10.0;// in °C
 
+const unsigned long MEASURE_INTERVAL = 3 * 60 * 1000; // in millis, default: 3 min 
+
+unsigned long measurementTimestamp = 0;
+
 DHT dhtInside(DHT_INSIDE_PIN, DHT_TYPE);
 DHT dhtOutside(DHT_OUTSIDE_PIN, DHT_TYPE);
 
@@ -55,6 +64,7 @@ float dewPointOutsideLastSwicthingTime;
 #include "ThingSpeak.h" // always include thingspeak header file after other header files and custom macros
 
 // helper methods
+
 void readSensors () {
   digitalWrite(DHT_POWER_PIN, HIGH);
   delay(25);
@@ -131,27 +141,20 @@ int fanPowerStatus (String fanName, String request) {
 }
 
 void fansOn () {
-  Serial.println("fansON called");
-
   fanStatusWorkshop = fanPowerStatus("cellarfanworkshop", FAN_REQUEST_ON);
   fanStatusPantry = fanPowerStatus("cellarfanpantry", FAN_REQUEST_ON);
+
+  Serial.println(String("finished function ") + __PRETTY_FUNCTION__ );
 }
 
-void fansOff () {
-  Serial.println("fansOff called");
- 
+void fansOff () { 
   fanStatusWorkshop = fanPowerStatus("cellarfanworkshop", FAN_REQUEST_OFF);
   fanStatusPantry = fanPowerStatus("cellarfanpantry", FAN_REQUEST_OFF);
+
+  Serial.println(String("finished function ") + __PRETTY_FUNCTION__ );
 }
 
-// for logging to thingspeak
 void logToThingSpeak () {
-  // Write to ThingSpeak. There are up to 8 fields in a channel, allowing you to store up to 8 different
-  // pieces of information in a channel.  Here, we write to field 1.
-  // int x = ThingSpeak.writeField(SECRET_CH_ID, 1, fanStatusWorkshop, SECRET_WRITE_APIKEY);
-  //uncomment if you want to get temperature in Fahrenheit
-  //int x = ThingSpeak.writeField(myChannelNumber, 1, temperatureF, myWriteAPIKey);
-
   ThingSpeak.setField(1, fanStatusWorkshop);
   ThingSpeak.setField(2, fanStatusPantry);
   ThingSpeak.setField(3, humidityInside);
@@ -173,7 +176,6 @@ void logToThingSpeak () {
   Serial.println(String("finished function ") + __PRETTY_FUNCTION__ );
 }
 
-// for debug
 void printValuesToSerial (String location, float humidity, float temperature, float dewPoint) {
   Serial.print(location + String(": "));
   Serial.print(String("temperature = ") + temperature + String("°C, "));
@@ -188,12 +190,24 @@ void printDebugInformation () {
   printValuesToSerial("OUTDOOR", humidityOutside, temperatureOutside, dewPointOutside);
 }
 
+void takeMeasurements () {
+ boolean measurementIntervalExpired = millis() > measurementTimestamp + MEASURE_INTERVAL;
+
+  if (measurementIntervalExpired) {
+    measurementTimestamp =  millis();
+    readSensors();
+    calcDewPoints();
+    logToThingSpeak();
+    printDebugInformation();
+  }
+
+  Serial.println(String("finished function ") + __PRETTY_FUNCTION__ );
+}
+
 // for state machine
-const unsigned long MEASURE_INTERVAL = 3 * 60 * 1000; // in millis, default: 3 min 
 const unsigned long VENTILATION_INTERVAL = 30 * 60 * 1000; // in millis, default: 30 min 
 const unsigned long WAIT_INTERVAL = 90 * 60 * 1000; // in millis, default: 90 min
 
-unsigned long measurementTimestamp = 0;
 unsigned long stateStartTimeStamp = 0;
 
 enum states {
@@ -213,15 +227,7 @@ void measure () {
   }
 
   // do state stuff repeatedly
-  boolean measurementIntervalExpired = millis() > measurementTimestamp + MEASURE_INTERVAL;
-
-  if (measurementIntervalExpired) {
-    measurementTimestamp =  millis();
-    readSensors();
-    calcDewPoints();
-    logToThingSpeak();
-    printDebugInformation();
-  }
+  takeMeasurements();
 
   // check for state transition
   boolean humidityDifferenceHigh = dewPointInside - dewPointOutside > DEW_POINT_THRESHOLD;
@@ -251,15 +257,7 @@ void ventilate () {
   }
 
   // do state stuff repeatedly
-  boolean measurementIntervalExpired = millis() > measurementTimestamp + MEASURE_INTERVAL;
-
-  if (measurementIntervalExpired) {
-    measurementTimestamp =  millis();
-    readSensors();
-    calcDewPoints();
-    logToThingSpeak();
-    printDebugInformation();
-  }
+  takeMeasurements();
 
   // check for state transition
   boolean ventilationIntervalExpired = millis() > stateStartTimeStamp + VENTILATION_INTERVAL;
@@ -291,15 +289,7 @@ void wait () {
   }
 
   // do state stuff repeatedly
-  boolean measurementIntervalExpired = millis() > measurementTimestamp + MEASURE_INTERVAL;
-
-  if (measurementIntervalExpired) {
-    measurementTimestamp =  millis();
-    readSensors();
-    calcDewPoints();
-    logToThingSpeak();
-    printDebugInformation();
-  }
+  takeMeasurements();
 
   // check for state transition
   boolean waitIntervalExpired = millis() > stateStartTimeStamp + WAIT_INTERVAL;
