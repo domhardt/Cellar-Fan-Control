@@ -8,12 +8,12 @@
 
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
 
-// needed for WIFI Manager library
+// for WIFI Manager library
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
 #include <WiFiManager.h>         //https://github.com/tzapu/WiFiManager
 
-// needed for HTTP requests
+// for HTTP requests
 #include <ESP8266HTTPClient.h>
 
 const String FAN_REQUEST_OFF = "/cm?cmnd=Power%20Off";
@@ -26,7 +26,7 @@ WiFiClient wifiClient;
 boolean fanStatusWorkshop;
 boolean fanStatusPantry;
 
-// needed for DTH sensors
+// for DTH sensors
 #include "DHT.h"
 #define DHT_TYPE DHT22
  
@@ -49,6 +49,10 @@ float humidityOutside;
 float temperatureOutside;
 float dewPointOutside;
 float dewPointOutsideLastSwicthingTime;
+
+// for logging to thingspeak
+#include "secrets.h"
+#include "ThingSpeak.h" // always include thingspeak header file after other header files and custom macros
 
 // helper methods
 void readSensors () {
@@ -140,6 +144,36 @@ void fansOff () {
   fanStatusPantry = fanPowerStatus("cellarfanpantry", FAN_REQUEST_OFF);
 }
 
+// for logging to thingspeak
+void logToThingSpeak () {
+  // Write to ThingSpeak. There are up to 8 fields in a channel, allowing you to store up to 8 different
+  // pieces of information in a channel.  Here, we write to field 1.
+  // int x = ThingSpeak.writeField(SECRET_CH_ID, 1, fanStatusWorkshop, SECRET_WRITE_APIKEY);
+  //uncomment if you want to get temperature in Fahrenheit
+  //int x = ThingSpeak.writeField(myChannelNumber, 1, temperatureF, myWriteAPIKey);
+
+  ThingSpeak.setField(1, fanStatusWorkshop);
+  ThingSpeak.setField(2, fanStatusPantry);
+  ThingSpeak.setField(3, humidityInside);
+  ThingSpeak.setField(4, humidityOutside);
+  ThingSpeak.setField(5, temperatureInside);
+  ThingSpeak.setField(6, temperatureOutside);
+  ThingSpeak.setField(7, dewPointInside);
+  ThingSpeak.setField(8, dewPointOutside);
+  
+  int statusMessage = ThingSpeak.writeFields(SECRET_CH_ID, SECRET_WRITE_APIKEY);
+
+  if(statusMessage == 200){
+    Serial.println("Channel update successful.");
+  }
+  else{
+    Serial.println("Problem updating channel. HTTP error code " + String(statusMessage));
+  }
+
+  Serial.println(String("finished function ") + __PRETTY_FUNCTION__ );
+}
+
+// for debug
 void printValuesToSerial (String location, float humidity, float temperature, float dewPoint) {
   Serial.print(location + String(": "));
   Serial.print(String("temperature = ") + temperature + String("°C, "));
@@ -182,9 +216,10 @@ void measure () {
   boolean measurementIntervalExpired = millis() > measurementTimestamp + MEASURE_INTERVAL;
 
   if (measurementIntervalExpired) {
+    measurementTimestamp =  millis();
     readSensors();
     calcDewPoints();
-    measurementTimestamp =  millis();
+    logToThingSpeak();
     printDebugInformation();
   }
 
@@ -219,9 +254,10 @@ void ventilate () {
   boolean measurementIntervalExpired = millis() > measurementTimestamp + MEASURE_INTERVAL;
 
   if (measurementIntervalExpired) {
+    measurementTimestamp =  millis();
     readSensors();
     calcDewPoints();
-    measurementTimestamp =  millis();
+    logToThingSpeak();
     printDebugInformation();
   }
 
@@ -258,9 +294,10 @@ void wait () {
   boolean measurementIntervalExpired = millis() > measurementTimestamp + MEASURE_INTERVAL;
 
   if (measurementIntervalExpired) {
+    measurementTimestamp =  millis();
     readSensors();
     calcDewPoints();
-    measurementTimestamp =  millis();
+    logToThingSpeak();
     printDebugInformation();
   }
 
@@ -320,6 +357,8 @@ void setup() {
 
   initWIFI();
   fansOff();
+
+  ThingSpeak.begin(wifiClient);  // Initialize ThingSpeak
 
   priorState = NONE;
   state = MEASURING;
