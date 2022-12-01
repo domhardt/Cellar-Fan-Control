@@ -18,6 +18,10 @@
 #include <ESP8266WebServer.h>
 #include <WiFiManager.h>         //https://github.com/tzapu/WiFiManager
 
+// for logging to thingspeak
+#include "secrets.h"
+#include "ThingSpeak.h"
+
 // for HTTP requests
 #include <ESP8266HTTPClient.h>
 
@@ -59,9 +63,20 @@ float temperatureOutside;
 float dewPointOutside;
 float dewPointOutsideLastSwicthingTime;
 
-// for logging to thingspeak
-#include "secrets.h"
-#include "ThingSpeak.h" // always include thingspeak header file after other header files and custom macros
+// for state machine
+const unsigned long VENTILATION_INTERVAL = 30 * 60 * 1000; // in millis, default: 30 min 
+const unsigned long WAIT_INTERVAL = 90 * 60 * 1000; // in millis, default: 90 min
+
+unsigned long stateStartTimeStamp = 0;
+
+enum states {
+  NONE,
+  MEASURING,
+  VENTILATING,
+  WAITING
+};
+
+states state, priorState;
 
 // helper methods
 
@@ -155,6 +170,8 @@ void fansOff () {
 }
 
 void logToThingSpeak () {
+  ThingSpeak.setStatus(String("State: ") + state);
+
   ThingSpeak.setField(1, fanStatusWorkshop);
   ThingSpeak.setField(2, fanStatusPantry);
   ThingSpeak.setField(3, humidityInside);
@@ -202,21 +219,6 @@ void takeMeasurements () {
   }
 
 }
-
-// for state machine
-const unsigned long VENTILATION_INTERVAL = 30 * 60 * 1000; // in millis, default: 30 min 
-const unsigned long WAIT_INTERVAL = 90 * 60 * 1000; // in millis, default: 90 min
-
-unsigned long stateStartTimeStamp = 0;
-
-enum states {
-  NONE,
-  MEASURING,
-  VENTILATING,
-  WAITING
-};
-
-states state, priorState;
 
 void measure () {
   // initialise stuff on entering a state
