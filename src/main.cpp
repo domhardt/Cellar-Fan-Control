@@ -61,7 +61,7 @@ float dewPointInside;
 float humidityOutside;
 float temperatureOutside;
 float dewPointOutside;
-float dewPointOutsideLastSwicthingTime;
+float dewPointInsideLastSwicthingTime;
 
 // for state machine
 const unsigned long VENTILATION_INTERVAL = 30 * 60 * 1000; // in millis, default: 30 min 
@@ -77,6 +77,7 @@ enum states {
 };
 
 states state, priorState;
+const char* stateStr[] = {"NONE", "MEASURING", "VENTILATING", "WAITING"};
 
 // helper methods
 
@@ -170,7 +171,7 @@ void fansOff () {
 }
 
 void logToThingSpeak () {
-  ThingSpeak.setStatus(String("State: ") + state);
+  ThingSpeak.setStatus(String("State: ") + stateStr[state]);
 
   ThingSpeak.setField(1, fanStatusWorkshop);
   ThingSpeak.setField(2, fanStatusPantry);
@@ -245,7 +246,6 @@ void measure () {
   if (state != priorState) {  
     Serial.println(String("leaving state ") + __PRETTY_FUNCTION__ );
   }
-
 }
 
 void ventilate () {
@@ -253,8 +253,8 @@ void ventilate () {
     Serial.println(String("entering state ") + __PRETTY_FUNCTION__ );
     priorState = state;
     stateStartTimeStamp = millis();
+    dewPointInsideLastSwicthingTime = dewPointInside;
     fansOn();
-    dewPointOutsideLastSwicthingTime = dewPointOutside;
   }
 
   // do state stuff repeatedly
@@ -264,7 +264,7 @@ void ventilate () {
   boolean ventilationIntervalExpired = millis() > stateStartTimeStamp + VENTILATION_INTERVAL;
   boolean temperatureInsideTooLow = temperatureInside < MIN_INSIDE_TEMPERATURE_CUTOFF;
   boolean temperatureOutsideTooLow = temperatureOutside < MIN_OUTSIDE_TEMPERATURE_CUTOFF;
-  boolean humidityOutsideTooHigh = dewPointOutside > dewPointOutsideLastSwicthingTime + DEW_POINT_THRESHOLD;
+  boolean humidityOutsideTooHigh = dewPointOutside > dewPointInsideLastSwicthingTime - (DEW_POINT_THRESHOLD/2);
 
   boolean leaveStateToWaiting = ventilationIntervalExpired || temperatureInsideTooLow || temperatureOutsideTooLow || humidityOutsideTooHigh;
 
@@ -274,12 +274,12 @@ void ventilate () {
     Serial.println(String("humidityOutsideTooHigh=") + humidityOutsideTooHigh);
     state = WAITING;
   }
-
-  if (state != priorState) {  // clean up on leaving a state
+  
+  // clean up on leaving a state
+  if (state != priorState) {  
     fansOff();
     Serial.println(String("leaving state ") + __PRETTY_FUNCTION__);
   }
-
 }
 
 void wait () {
@@ -301,7 +301,8 @@ void wait () {
     state = MEASURING;
   }
 
-  if (state != priorState) {  // clean up on leaving a state
+  // clean up on leaving a state
+  if (state != priorState) {
     Serial.println(String("leaving state ") + __PRETTY_FUNCTION__ );
   }
 }
