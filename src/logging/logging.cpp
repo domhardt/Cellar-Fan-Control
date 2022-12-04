@@ -1,6 +1,5 @@
 // custom include
 #include "logging.h"
-#include "logging.h"
 
 // for serial
 void initSerial()
@@ -21,6 +20,11 @@ void initSerial()
     Serial.println(String("finished function ") + __PRETTY_FUNCTION__);
 }
 
+void initThingSpeak()
+{
+    ThingSpeak.begin(wifiClient); // Initialize ThingSpeak
+}
+
 void printValuesToSerial(String location, float humidity, float temperature, float dewPoint)
 {
     Serial.print(location + String(": "));
@@ -35,4 +39,31 @@ void printDebugInformation()
     Serial.println(String("fanStatusWorkshop = ") + fanStatusWorkshop + String(", fanStatusPantry = ") + fanStatusPantry);
     printValuesToSerial("INDOOR ", humidityInside, temperatureInside, dewPointInside);
     printValuesToSerial("OUTDOOR", humidityOutside, temperatureOutside, dewPointOutside);
+}
+
+void logToThingSpeak()
+{
+    ThingSpeak.setStatus(String("State: ") + stateString());
+
+    ThingSpeak.setField(1, fanStatusWorkshop);
+    ThingSpeak.setField(2, fanStatusPantry);
+    ThingSpeak.setField(3, humidityInside);
+    ThingSpeak.setField(4, humidityOutside);
+    ThingSpeak.setField(5, temperatureInside);
+    ThingSpeak.setField(6, temperatureOutside);
+    ThingSpeak.setField(7, dewPointInside);
+    ThingSpeak.setField(8, dewPointOutside);
+
+    int statusMessage = ThingSpeak.writeFields(SECRET_CH_ID, SECRET_WRITE_APIKEY);
+
+    if (statusMessage == 200)
+    {
+        Serial.println("Channel update successful.");
+    }
+    else
+    {
+        Serial.println("Problem updating channel. HTTP error code " + String(statusMessage));
+    }
+
+    Serial.println(String("finished function ") + __PRETTY_FUNCTION__);
 }
