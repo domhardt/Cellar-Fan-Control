@@ -15,8 +15,8 @@
 
 // custom include
 #include "sensor/sensor_DHT22.h"
-// #include "wifi/wifi.h"
 #include "wireless/wireless.h"
+#include "logging/logging.h"
 
 // for logging to thingspeak
 #include "ThingSpeak.h"
@@ -64,19 +64,7 @@ void logToThingSpeak () {
   Serial.println(String("finished function ") + __PRETTY_FUNCTION__ );
 }
 
-void printValuesToSerial (String location, float humidity, float temperature, float dewPoint) {
-  Serial.print(location + String(": "));
-  Serial.print(String("temperature = ") + temperature + String("°C, "));
-  Serial.print(String("humidity = ") + humidity + String("%, "));
-  Serial.print(String("dewPoint = ") + dewPoint + String("°C"));
-  Serial.println();
-}
 
-void printDebugInformation () {
-  Serial.println(String("fanStatusWorkshop = ") + fanStatusWorkshop + String(", fanStatusPantry = ") + fanStatusPantry); 
-  printValuesToSerial("INDOOR ", humidityInside, temperatureInside, dewPointInside);
-  printValuesToSerial("OUTDOOR", humidityOutside, temperatureOutside, dewPointOutside);
-}
 
 void takeMeasurements () {
  boolean measurementIntervalExpired = millis() > measurementTimestamp + MEASURE_INTERVAL;
@@ -174,23 +162,6 @@ void wait () {
   if (state != priorState) {
     Serial.println(String("leaving state ") + __PRETTY_FUNCTION__ );
   }
-}
-
-// for serial
-void initSerial () {
-  Serial.begin(74480);
-  delay(500);
-
-  while (!Serial);
-  delay(500);
-  
-  Serial.println();
-  Serial.println("\nNAME: Humidity Controlled Cellar Fan");
-  Serial.println("FILE: " __FILE__);
-  Serial.println("VERSION: " __DATE__ ", " __TIME__);
-  Serial.println("AUTHOR: Michael Domhardt\n");
-
-  Serial.println(String("finished function ") + __PRETTY_FUNCTION__ );
 }
 
 void setup() {
