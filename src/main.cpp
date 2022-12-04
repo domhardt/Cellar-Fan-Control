@@ -15,30 +15,12 @@
 
 // custom include
 #include "sensor/sensor_DHT22.h"
-
-#include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
-
-// for WIFI Manager library
-#include <DNSServer.h>
-#include <ESP8266WebServer.h>
-#include <WiFiManager.h>         //https://github.com/tzapu/WiFiManager
-
-// for HTTP requests
-#include <ESP8266HTTPClient.h>
+// #include "wifi/wifi.h"
+#include "wireless/wireless.h"
 
 // for logging to thingspeak
 #include "ThingSpeak.h"
 #include "secrets.h"
-
-const String FAN_REQUEST_OFF = "/cm?cmnd=Power%20Off";
-const String FAN_REQUEST_ON = "/cm?cmnd=Power%20On";
-const String FAN_REQUEST_STATUS = "/cm?cmnd=Power";
-
-HTTPClient sender;
-WiFiClient wifiClient;
-
-boolean fanStatusWorkshop;
-boolean fanStatusPantry;
 
 // for state machine
 const unsigned long VENTILATION_INTERVAL = 30 * 60 * 1000; // in millis, default: 30 min 
@@ -57,56 +39,6 @@ states state, priorState;
 const char* stateStr[] = {"NONE", "MEASURING", "VENTILATING", "WAITING"};
 
 // helper methods
-
-int fanPowerStatus (String fanName, String request) { 
-  int result = -1;
-
-  String httpRequest = "http://" + fanName + request;
-  if (sender.begin(wifiClient, httpRequest)) {// establish connection, initialise request
-    int httpCode = sender.GET();// HTTP-Code of the response
-
-    if (httpCode > 0) {// request sent and server responded
-      if (httpCode == HTTP_CODE_OK) { // response was OK aka code 200
-        String payload = sender.getString();// response string
-        Serial.println(fanName + String("PowerStatus = ") + payload); 
-        
-        if (payload.indexOf("ON") > 0) {
-          result = 1;
-        }
-        else if (payload.indexOf("OFF") > 0) {
-          result = 0;
-        }
-        else {
-          Serial.println("WARNING: fan power status could not be determind.");
-        }
-      } 
-    }
-    else {// HTTP error handling
-      Serial.println(String("HTTP-Error: ") + sender.errorToString(httpCode).c_str());
-    }
-
-    sender.end();// end request and terminate conection
-    
-  }else {
-    Serial.printf("WARNING: HTTP connection could not be established.");
-  }
-
-  return result;
-}
-
-void fansOn () {
-  fanStatusWorkshop = fanPowerStatus("cellarfanworkshop", FAN_REQUEST_ON);
-  fanStatusPantry = fanPowerStatus("cellarfanpantry", FAN_REQUEST_ON);
-
-  Serial.println(String("finished function ") + __PRETTY_FUNCTION__ );
-}
-
-void fansOff () { 
-  fanStatusWorkshop = fanPowerStatus("cellarfanworkshop", FAN_REQUEST_OFF);
-  fanStatusPantry = fanPowerStatus("cellarfanpantry", FAN_REQUEST_OFF);
-
-  Serial.println(String("finished function ") + __PRETTY_FUNCTION__ );
-}
 
 void logToThingSpeak () {
   ThingSpeak.setStatus(String("State: ") + stateStr[state]);
@@ -156,7 +88,6 @@ void takeMeasurements () {
     logToThingSpeak();
     printDebugInformation();
   }
-
 }
 
 void measure () {
@@ -262,29 +193,11 @@ void initSerial () {
   Serial.println(String("finished function ") + __PRETTY_FUNCTION__ );
 }
 
-void initWIFI () {
-    WiFiManager wifiManager;//Local intialization. Once its business is done, there is no need to keep it around
-    //wifiManager.resetSettings();//reset saved settings
-    //wifiManager.setAPStaticIPConfig(IPAddress(10,0,1,1), IPAddress(10,0,1,1), IPAddress(255,255,255,0)); //set custom ip for portal
-
-    //fetches ssid and pass from eeprom and tries to connect
-    //if it does not connect it starts an access point with the specified name
-    //here  "AutoConnectAP"
-    wifiManager.autoConnect("AutoConnectAP");// and goes into a blocking loop awaiting configuration
-    //wifiManager.autoConnect();    //or use this for auto generated name ESP + ChipID
-
-    Serial.println("WIFI connected.\n)");    //if you get here you have connected to the WiFi
-    Serial.println(String("finished function ") + __PRETTY_FUNCTION__ );
-}
-
 void setup() {
   initSerial();
-
-  pinMode(DHT_POWER_PIN, OUTPUT);
-  digitalWrite(DHT_POWER_PIN, LOW);
-
+  initSensors();
   initWIFI();
-  fansOff();
+  initFans();
 
   ThingSpeak.begin(wifiClient);  // Initialize ThingSpeak
 

@@ -18,6 +18,12 @@ float dewPointOutside;
 
 unsigned long measurementTimestamp = 0;
 
+void initSensors()
+{
+    pinMode(DHT_POWER_PIN, OUTPUT);
+    digitalWrite(DHT_POWER_PIN, LOW);
+}
+
 void readSensors()
 {
     digitalWrite(DHT_POWER_PIN, HIGH);
