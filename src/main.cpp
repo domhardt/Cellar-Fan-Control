@@ -10,7 +10,12 @@
  * by Michael Domhardt
  */
 
+// framework include
 #include "Arduino.h"
+
+// custom include
+#include "sensor/sensor_DHT22.h"
+
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
 
 // for WIFI Manager library
@@ -18,12 +23,12 @@
 #include <ESP8266WebServer.h>
 #include <WiFiManager.h>         //https://github.com/tzapu/WiFiManager
 
-// for logging to thingspeak
-#include "secrets.h"
-#include "ThingSpeak.h"
-
 // for HTTP requests
 #include <ESP8266HTTPClient.h>
+
+// for logging to thingspeak
+#include "ThingSpeak.h"
+#include "secrets.h"
 
 const String FAN_REQUEST_OFF = "/cm?cmnd=Power%20Off";
 const String FAN_REQUEST_ON = "/cm?cmnd=Power%20On";
@@ -34,34 +39,6 @@ WiFiClient wifiClient;
 
 boolean fanStatusWorkshop;
 boolean fanStatusPantry;
-
-// for DTH sensors
-#include "DHT.h"
-#define DHT_TYPE DHT22
- 
-const int DHT_INSIDE_PIN = 5;
-const int DHT_OUTSIDE_PIN = 12;
-const int DHT_POWER_PIN = 2;
-
-const float DEW_POINT_THRESHOLD = 4.0;// in K
-const float MIN_INSIDE_TEMPERATURE_CUTOFF = 8.0;// in °C
-const float MIN_OUTSIDE_TEMPERATURE_CUTOFF = -10.0;// in °C
-
-const unsigned long MEASURE_INTERVAL = 3 * 60 * 1000; // in millis, default: 3 min 
-
-unsigned long measurementTimestamp = 0;
-
-DHT dhtInside(DHT_INSIDE_PIN, DHT_TYPE);
-DHT dhtOutside(DHT_OUTSIDE_PIN, DHT_TYPE);
-
-float humidityInside;
-float temperatureInside;
-float dewPointInside;
-
-float humidityOutside;
-float temperatureOutside;
-float dewPointOutside;
-float dewPointInsideLastSwicthingTime;
 
 // for state machine
 const unsigned long VENTILATION_INTERVAL = 30 * 60 * 1000; // in millis, default: 30 min 
@@ -80,45 +57,6 @@ states state, priorState;
 const char* stateStr[] = {"NONE", "MEASURING", "VENTILATING", "WAITING"};
 
 // helper methods
-
-void readSensors () {
-  digitalWrite(DHT_POWER_PIN, HIGH);
-  delay(25);
-
-  humidityInside = -100.0;
-  temperatureInside = -100.0;
-
-  humidityOutside = -100.0;
-  temperatureOutside = -100.0;
-
-  dhtInside.begin();
-  dhtOutside.begin();
-  delay(25);
-
-  humidityInside = dhtInside.readHumidity();
-  temperatureInside = dhtInside.readTemperature();
-
-  humidityOutside = dhtOutside.readHumidity();
-  temperatureOutside = dhtOutside.readTemperature();
-  
-  digitalWrite(DHT_POWER_PIN, LOW);
-}
-
-float calcDewPoint(float humidity, float temperature) {
-  float k;
-  k = log(humidity/100) + (17.62 * temperature) / (243.12 + temperature);
-  return 243.12 * k / (17.62 - k);
-}
-
-void calcDewPoints () {
-  dewPointInside = -100.0;
-  dewPointOutside = -100.0;
-
-  dewPointOutside = calcDewPoint(humidityOutside, temperatureOutside);
-  dewPointInside = calcDewPoint(humidityInside, temperatureInside);
-
-  Serial.println(String("finished function ") + __PRETTY_FUNCTION__ );
-}
 
 int fanPowerStatus (String fanName, String request) { 
   int result = -1;
