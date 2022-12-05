@@ -64,14 +64,14 @@ int fanPowerStatus(String fanName, String request)
         }
         else
         { // HTTP error handling
-            Serial.println(String("HTTP-Error: ") + sender.errorToString(httpCode).c_str());
+            Serial.println(String("TASMOTA HTTP-Error: ") + sender.errorToString(httpCode).c_str());
         }
 
         sender.end(); // end request and terminate conection
     }
     else
     {
-        Serial.printf("WARNING: HTTP connection could not be established.");
+        Serial.printf("TASMOTA WARNING: HTTP connection could not be established.");
     }
 
     return result;
