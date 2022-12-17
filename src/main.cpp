@@ -6,7 +6,7 @@
  * controls two WIFI sockets running TASMOTA firmware (e.g., Sonoff S2x)
  * logs data to thingspeak
  * logic based on finite state machine (FSM)
- * 
+ *
  * by Michael Domhardt
  */
 
@@ -18,19 +18,23 @@
 #include "wireless/wireless.h"
 #include "finiteStateMachine/finiteStateMachine.h"
 #include "logging/logging.h"
-#include "finiteStateMachine/finiteStateMachine.h"
+#include "webserver/webserver.h"
 
-void setup() {
+void setup()
+{
   initSerial();
   initSensors();
   initWIFI();
   initFans();
   initThingSpeak();
   initFinitStateMachine();
+  initWebserver();
 
-  Serial.println(String("finished function ") + __PRETTY_FUNCTION__ );
+  Serial.println(String("finished function ") + __PRETTY_FUNCTION__);
 }
 
-void loop() {
+void loop()
+{
   runFiniteStateMachine();
+  server.handleClient();
 }
