@@ -5,28 +5,33 @@ ESP8266WebServer server(80);
 
 const String postForms = "<html>\
   <head>\
-    <title>ESP8266 Web Server POST handling</title>\
+    <title>Cellar Fan Control</title>\
     <style>\
       body { background-color: #cccccc; font-family: Arial, Helvetica, Sans-Serif; Color: #000088; }\
     </style>\
   </head>\
   <body>\
-    <h1>POST plain text to /postplain/</h1><br>\
-    <form method=\"post\" enctype=\"text/plain\" action=\"/postplain/\">\
-      <input type=\"text\" name=\'{\"hello\": \"world\", \"trash\": \"\' value=\'\"}\'><br>\
-      <input type=\"submit\" value=\"Submit\">\
+    <h1>Cellar Fan Control</h1>\
+    <form action=\"/submitPage/\">\
+        First name:<br><input type=\"text\" name=\"firstname\" value=\VENTILATION_INTERVAL\><br>\
+        Last name:<br><input type=\"text\" name=\"lastname\" value=\"Mouse\"><br>\
+        <input type=\"submit\" value=\"Submit\">\
     </form>\
-    <h1>POST form data to /postform/</h1><br>\
-    <form method=\"post\" enctype=\"application/x-www-form-urlencoded\" action=\"/postform/\">\
-      <input type=\"text\" name=\"hello\" value=\"world\"><br>\
-      <input type=\"submit\" value=\"Submit\">\
-    </form>\
+    // <form method=\"post\" enctype=\"text/plain\" action=\"/postplain/\">\
+    //   <input type=\"text\" name=\'{\"hello\": \"world\", \"trash\": \"\' value=\'\"}\'><br>\
+    //   <input type=\"submit\" value=\"Submit\">\
+    // </form>\
+    // <h1>POST form data to /postform/</h1><br>\
+    // <form method=\"post\" enctype=\"application/x-www-form-urlencoded\" action=\"/postform/\">\
+    //   <input type=\"text\" name=\"hello\" value=\"world\"><br>\
+    //   <input type=\"submit\" value=\"Submit\">\
+    // </form>\
   </body>\
 </html>";
 
 void initWebserver()
 {
-    if (MDNS.begin("esp8266"))
+    if (MDNS.begin("CellarFanControl"))
     {
         Serial.println("MDNS responder started");
     }
@@ -35,6 +40,8 @@ void initWebserver()
     server.on("/postplain/", handlePlain);
     server.on("/postform/", handleForm);
     server.onNotFound(handleNotFound);
+    server.on("/submitPage/", handleSubmit);
+
 
     server.begin();
     Serial.println("HTTP server started");
@@ -89,4 +96,23 @@ void handleNotFound()
         message += " " + server.argName(i) + ": " + server.arg(i) + "\n";
     }
     server.send(404, "text/plain", message);
+}
+
+void handleSubmit()
+{
+ String firstName = server.arg("firstname"); 
+ String lastName = server.arg("lastname"); 
+
+ Serial.print("First Name:");
+ Serial.println(firstName);
+
+ Serial.print("Last Name:");
+ Serial.println(lastName);
+ 
+ String s = "<a href='/'> Go Back </a>";
+ server.send(200, "text/html", s); //Send web page
+}
+
+void handleReset()
+{
 }

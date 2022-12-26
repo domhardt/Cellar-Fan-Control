@@ -4,6 +4,7 @@
 #include "Arduino.h"
 
 // custom include
+#include "../finiteStateMachine/finiteStateMachine.h"
 
 // library include
 #include <ESP8266WebServer.h>
@@ -18,3 +19,5 @@ void handleRoot();
 void handlePlain();
 void handleForm();
 void handleNotFound();
+void handleSubmit();
+void handleReset();
