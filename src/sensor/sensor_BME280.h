@@ -1,19 +1,17 @@
 #pragma once
 
-// for DTH sensors
-#define DHT_TYPE DHT22
+// for sensors
+#define BME280_POWER_PIN 15
 
-#define DHT_INSIDE_PIN 5
-#define DHT_OUTSIDE_PIN 12
-#define DHT_POWER_PIN 2
+#define BME280_ADDRESS_INSIDE 0x76
+#define BME280_ADDRESS_OUTSIDE 0x77
 
-#define DEW_POINT_THRESHOLD 4.0              // in K
-#define MIN_INSIDE_TEMPERATURE_CUTOFF 8.0    // in °C
-#define MIN_OUTSIDE_TEMPERATURE_CUTOFF -10.0 // in °C
-
-#define MEASURE_INTERVAL 180000 // 3 * 60 * 1000; // in millis, default: 3 min
-
+extern unsigned long measureInterval;
 extern unsigned long measurementTimestamp;
+
+extern float dewPointThreshold;
+extern float minInsideTemperatureCutoff;
+extern float minOutsideTemperatureCutoff;
 
 extern float humidityInside;
 extern float temperatureInside;

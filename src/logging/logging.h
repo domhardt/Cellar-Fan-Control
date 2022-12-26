@@ -5,7 +5,8 @@
 
 // custom include
 #include "../wireless/wireless.h"
-#include "../sensor/sensor_DHT22.h"
+// #include "../sensor/sensor_DHT22.h"
+#include "../sensor/sensor_BME280.h"
 #include "../finiteStateMachine/finiteStateMachine.h"
 
 // library include

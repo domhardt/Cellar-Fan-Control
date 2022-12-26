@@ -20,7 +20,7 @@ void initWIFI()
     // fetches ssid and pass from eeprom and tries to connect
     // if it does not connect it starts an access point with the specified name
     // here  "AutoConnectAP"
-    wifiManager.autoConnect("AutoConnectAP"); // and goes into a blocking loop awaiting configuration
+    wifiManager.autoConnect("Cellar Fan Control"); // and goes into a blocking loop awaiting configuration
     // wifiManager.autoConnect();    //or use this for auto generated name ESP + ChipID
 
     Serial.println("WIFI connected.\n)"); // if you get here you have connected to the WiFi

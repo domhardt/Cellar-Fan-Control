@@ -58,11 +58,11 @@ void logToThingSpeak()
 
     if (statusMessage == 200)
     {
-        Serial.println("Channel update successful.");
+        Serial.println("Thingspeak channel update successful.");
     }
     else
     {
-        Serial.println("Problem updating channel. HTTP error code " + String(statusMessage));
+        Serial.println("ERROR: Problem updating channel. HTTP error code " + String(statusMessage));
     }
 
     Serial.println(String("finished function ") + __PRETTY_FUNCTION__);

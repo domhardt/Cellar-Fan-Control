@@ -14,7 +14,8 @@
 #include "Arduino.h"
 
 // custom include
-#include "sensor/sensor_DHT22.h"
+// #include "sensor/sensor_DHT22.h"
+#include "sensor/sensor_BME280.h"
 #include "wireless/wireless.h"
 #include "finiteStateMachine/finiteStateMachine.h"
 #include "logging/logging.h"
@@ -23,8 +24,8 @@
 void setup()
 {
   initSerial();
-  initSensors();
   initWIFI();
+  initSensors();
   initFans();
   initThingSpeak();
   initFinitStateMachine();

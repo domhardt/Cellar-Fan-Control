@@ -2,8 +2,8 @@
 #include "finiteStateMachine.h"
 
 // for state machine
-const unsigned long VENTILATION_INTERVAL = 30 * 60 * 1000; // in millis, default: 30 min
-const unsigned long WAIT_INTERVAL = 90 * 60 * 1000;        // in millis, default: 90 min
+unsigned long ventilationInterval = 30 * 60 * 1000; // in millis, default: 30 min
+unsigned long waitInterval = 90 * 60 * 1000;        // in millis, default: 90 min
 
 unsigned long stateStartTimeStamp = 0;
 
@@ -25,7 +25,7 @@ void initFinitStateMachine()
 
 void takeMeasurements()
 {
-    boolean measurementIntervalExpired = millis() > measurementTimestamp + MEASURE_INTERVAL;
+    boolean measurementIntervalExpired = millis() > measurementTimestamp + measureInterval;
 
     if (measurementIntervalExpired)
     {
@@ -51,9 +51,9 @@ void measure()
     takeMeasurements();
 
     // check for state transition
-    boolean humidityDifferenceHigh = dewPointInside - dewPointOutside > DEW_POINT_THRESHOLD;
-    boolean temperatureInsideTooLow = temperatureInside < MIN_INSIDE_TEMPERATURE_CUTOFF;
-    boolean temperatureOutsideTooLow = temperatureOutside < MIN_OUTSIDE_TEMPERATURE_CUTOFF;
+    boolean humidityDifferenceHigh = dewPointInside - dewPointOutside > dewPointThreshold;
+    boolean temperatureInsideTooLow = temperatureInside < minInsideTemperatureCutoff;
+    boolean temperatureOutsideTooLow = temperatureOutside < minOutsideTemperatureCutoff;
 
     boolean leaveStateToVentilate = humidityDifferenceHigh && !temperatureInsideTooLow && !temperatureOutsideTooLow;
 
@@ -84,10 +84,10 @@ void ventilate()
     takeMeasurements();
 
     // check for state transition
-    boolean ventilationIntervalExpired = millis() > stateStartTimeStamp + VENTILATION_INTERVAL;
-    boolean temperatureInsideTooLow = temperatureInside < MIN_INSIDE_TEMPERATURE_CUTOFF;
-    boolean temperatureOutsideTooLow = temperatureOutside < MIN_OUTSIDE_TEMPERATURE_CUTOFF;
-    boolean humidityOutsideTooHigh = dewPointOutside > dewPointInsideLastSwicthingTime - (DEW_POINT_THRESHOLD / 2);
+    boolean ventilationIntervalExpired = millis() > stateStartTimeStamp + ventilationInterval;
+    boolean temperatureInsideTooLow = temperatureInside < minInsideTemperatureCutoff;
+    boolean temperatureOutsideTooLow = temperatureOutside < minOutsideTemperatureCutoff;
+    boolean humidityOutsideTooHigh = dewPointOutside > dewPointInsideLastSwicthingTime - (dewPointThreshold / 2);
 
     boolean leaveStateToWaiting = ventilationIntervalExpired || temperatureInsideTooLow || temperatureOutsideTooLow || humidityOutsideTooHigh;
 
@@ -120,7 +120,7 @@ void wait()
     takeMeasurements();
 
     // check for state transition
-    boolean waitIntervalExpired = millis() > stateStartTimeStamp + WAIT_INTERVAL;
+    boolean waitIntervalExpired = millis() > stateStartTimeStamp + waitInterval;
 
     boolean leaveStateToMeasuring = waitIntervalExpired;
 

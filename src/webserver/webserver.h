@@ -5,6 +5,7 @@
 
 // custom include
 #include "../finiteStateMachine/finiteStateMachine.h"
+#include "../sensor/sensor_BME280.h"
 
 // library include
 #include <ESP8266WebServer.h>

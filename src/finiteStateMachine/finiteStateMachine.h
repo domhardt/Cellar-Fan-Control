@@ -4,12 +4,12 @@
 #include "Arduino.h"
 
 // custom include
-#include "../sensor/sensor_DHT22.h"
+// #include "../sensor/sensor_DHT22.h"
+#include "../sensor/sensor_BME280.h"
 #include "../logging/logging.h"
 
-extern const unsigned long VENTILATION_INTERVAL;
-extern const unsigned long WAIT_INTERVAL;
-
+extern unsigned long ventilationInterval;
+extern unsigned long waitInterval;
 extern unsigned long stateStartTimeStamp;
 
 enum states
@@ -28,4 +28,5 @@ void measure ();
 void ventilate ();
 void wait();
 void runFiniteStateMachine();
+
 String stateString ();
