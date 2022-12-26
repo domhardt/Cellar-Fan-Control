@@ -13,8 +13,6 @@
 
 extern ESP8266WebServer server;
 
-// extern const String postForms;
-
 void initWebserver();
 void handleRoot();
 void handlePlain();

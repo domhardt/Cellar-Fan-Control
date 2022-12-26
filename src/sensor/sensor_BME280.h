@@ -9,9 +9,9 @@
 extern unsigned long measureInterval;
 extern unsigned long measurementTimestamp;
 
-extern float dewPointThreshold;
-extern float minInsideTemperatureCutoff;
-extern float minOutsideTemperatureCutoff;
+extern int dewPointThreshold;
+extern int minInsideTemperatureCutoff;
+extern int minOutsideTemperatureCutoff;
 
 extern float humidityInside;
 extern float temperatureInside;
