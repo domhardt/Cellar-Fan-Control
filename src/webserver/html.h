@@ -1,7 +1,8 @@
 const char HTML_header[] = R"=====(
 <html>
   <head>
-      <title>Cellar Fan Control</title>
+    <meta charset="utf-8">
+    <title>Cellar Fan Control</title>
   </head>
 <body>
     <h1>Cellar Fan Control</h1>
@@ -15,6 +16,7 @@ const char HTML_footer[] = R"=====(
 )=====";
 
 const char HTML_form_header[] = R"=====(
+    <h2>Settings</h2>
   <form action="/save" method="POST">
 )=====";
 

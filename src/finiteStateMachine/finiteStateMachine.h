@@ -30,3 +30,4 @@ void wait();
 void runFiniteStateMachine();
 
 String stateString ();
+String stateInfo ();

@@ -32,17 +32,19 @@ void handleRoot()
     String formhead = HTML_form_header;
     String formfoot = HTML_form_footer;
 
+    String content = "<h2>Live Information</h2> <p>" + fanInfo() + "<br />" + humidityInfo() + "<br />" + temperatureInfo() + "<br />" + dewPointInfo() + "<br />" +  stateInfo() + "</p>";
+
     String measureIntervalFormElement = "Measure Interval: <input type=\"number\" name=\"measureInterval\" value=\"" + String(measureInterval / 1000 / 60) + "\" min=\"1\"> minutes (default: 3 minutes, minimum: 1 minute)<br />";
     String ventilationIntervalFormElement = "Ventilation Interval: <input type=\"number\" name=\"ventilationInterval\" value=\"" + String(ventilationInterval / 1000 / 60) + "\" min=\"1\"> minutes (default: 30 minutes, minimum: 1 minute)<br />";
     String waitIntervalFormElement = "Wait Interval: <input type=\"number\" name=\"waitInterval\" value=\"" + String(waitInterval / 1000 / 60) + "\" min=\"1\"> minutes (default: 90 minutes, minimum: 1 minute)<br />";
 
-    String dewPointThresholdFormElement = "Dew Point Threshold: <input type=\"number\" name=\"dewPointThreshold\" value=\"" + String(dewPointThreshold) + "\" min=\"2\"> Kelvin (default: 4 Kelvin, minimum: 2 Kelvin)<br />";
-    String minInsideTemperatureCutoffFormElement = "Minimum Inside Cutoff Temperature: <input type=\"number\" name=\"minInsideTemperatureCutoff\" value=\"" + String(minInsideTemperatureCutoff) + "\" min=\"6\"> Grad Celsius (default: 8 Grad Celsius, minimum: 6 Grad Celsius)<br />";
-    String minOutsideTemperatureCutoffFormElement = "Minimum Outside Cutoff Temperature: <input type=\"number\" name=\"minOutsideTemperatureCutoff\" value=\"" + String(minOutsideTemperatureCutoff) + "\" min=\"-272\"> Grad Celsius (default: -10 Grad Celsius)<br />";
+    String dewPointThresholdFormElement = "Dew Point Threshold: <input type=\"number\" name=\"dewPointThreshold\" value=\"" + String(dewPointThreshold) + "\" min=\"2\"> K (default: 4 K, minimum: 2 K, explanation: inside dew point - outside dew point<br />";
+    String minInsideTemperatureCutoffFormElement = "Minimum Inside Cutoff Temperature: <input type=\"number\" name=\"minInsideTemperatureCutoff\" value=\"" + String(minInsideTemperatureCutoff) + "\" min=\"6\"> °C (default: 8 °C, minimum: 6 °C)<br />";
+    String minOutsideTemperatureCutoffFormElement = "Minimum Outside Cutoff Temperature: <input type=\"number\" name=\"minOutsideTemperatureCutoff\" value=\"" + String(minOutsideTemperatureCutoff) + "\" min=\"-272\"> °C (default: -10 °C)<br />";
 
     String formcontent = measureIntervalFormElement + ventilationIntervalFormElement + waitIntervalFormElement + dewPointThresholdFormElement + minInsideTemperatureCutoffFormElement + minOutsideTemperatureCutoffFormElement;
 
-    server.send(200, "text/html", head + formhead + formcontent + formfoot + foot);
+    server.send(200, "text/html", head + content + formhead + formcontent + formfoot + foot);
 }
 
 void handleForm()

@@ -67,3 +67,22 @@ void logToThingSpeak()
 
     Serial.println(String("finished function ") + __PRETTY_FUNCTION__);
 }
+
+String fanInfo()
+{
+    return String("Fan Status Workshop = ") + fanStatusWorkshop + String(" ; Fan Status Pantry = ") + fanStatusPantry + String(" [0/1]");
+}
+
+String humidityInfo()
+{
+    return String("Humidity Inside = ") + humidityInside + String(" % ; Humidity Outside = ") + humidityOutside + String(" %");
+}
+String temperatureInfo()
+{
+    return String("Temperature Inside = ") + temperatureInside + String(" °C ; Temperature Outside = ") + temperatureOutside  + String(" °C");
+}
+String dewPointInfo()
+{
+    double dewPointDifference = dewPointInside - dewPointOutside;
+    return String("Dew Point Inside = ") + dewPointInside + String(" °C ; Dew Point Outside = ") + dewPointOutside + String(" °C ; Dew Point Difference = ") + dewPointDifference   + String(" K");
+}

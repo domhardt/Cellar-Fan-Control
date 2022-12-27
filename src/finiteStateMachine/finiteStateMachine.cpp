@@ -160,3 +160,8 @@ String stateString()
     const char *stateStr[] = {"NONE", "MEASURING", "VENTILATING", "WAITING"};
     return stateStr[state];
 }
+
+String stateInfo () {
+    String result = "State: " + stateString();
+    return result;
+}
