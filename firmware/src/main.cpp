@@ -20,11 +20,13 @@
 #include "finiteStateMachine/finiteStateMachine.h"
 #include "logging/logging.h"
 #include "webserver/webserver.h"
+#include "config/config.h"
 
 void setup()
 {
   initSerial();
   initWIFI();
+  initConfig();
   initSensors();
   initFans();
   initThingSpeak();

@@ -11,8 +11,8 @@ Adafruit_BME280 bmeInside, bmeOutside;
 unsigned long measureInterval = 3 * 60 * 1000; // in millis, default: 3 min
 unsigned long measurementTimestamp = 0;
 
-int dewPointThreshold = 4;             // in K, default: 4K
-int minInsideTemperatureCutoff = 8;    // in °C, default: 8°C
+int dewPointThreshold = 5;             // in K, default: 5K
+int minInsideTemperatureCutoff = 10;    // in °C, default: 10°C
 int minOutsideTemperatureCutoff = -10; // in °C, default: -10°C
 
 float humidityInside;
