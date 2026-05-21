@@ -26,6 +26,9 @@ extern WiFiClient wifiClient;
 void initWIFI();
 void initFans();
 
+// watchdog: periodically ensure WiFi is connected and recover if needed
+void checkWiFi();
+
 int fanPowerStatus(String fanName, String request);
 void fansOn();
 void fansOff();
