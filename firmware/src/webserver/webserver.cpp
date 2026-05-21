@@ -2,13 +2,15 @@
 #include "webserver.h"
 #include "html.h"
 #include "../config/config.h"
+#include "../wireless/wireless.h"
 
 ESP8266WebServer server(80);
 
 void initWebserver()
 {
-    if (MDNS.begin("cellar-fan-control")) // start the mDNS responder for cellar-fan-control.local
+    if (MDNS.begin(WIFI_MDNS_NAME)) // start the mDNS responder for cellar-fan-control.local
     {
+        MDNS.addService("http", "tcp", 80);
         Serial.println("MDNS responder started.");
     }
     else

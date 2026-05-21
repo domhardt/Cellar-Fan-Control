@@ -4,6 +4,9 @@
 WiFiClient wifiClient;
 HTTPClient sender;
 
+const char WIFI_DEVICE_NAME[] = "Cellar Fan Control";
+const char WIFI_MDNS_NAME[] = "cellar-fan-control";
+
 // WiFi watchdog / reconnect configuration
 // Interval between connectivity checks (human-readable seconds).
 // Example: set to 10 for a 10 second check interval.
@@ -37,11 +40,13 @@ void initWIFI()
     // wifiManager.resetSettings();//reset saved settings
     // wifiManager.setAPStaticIPConfig(IPAddress(10,0,1,1), IPAddress(10,0,1,1), IPAddress(255,255,255,0)); //set custom ip for portal
 
+    // configure both the AP portal SSID and DHCP hostname from the same central constant
+    WiFi.hostname(WIFI_DEVICE_NAME);
+
     // fetches ssid and pass from eeprom and tries to connect
     // if it does not connect it starts an access point with the specified name
-    // here  "AutoConnectAP"
 
-    if(!wifiManager.autoConnect("Cellar Fan Control")) {
+    if(!wifiManager.autoConnect(WIFI_DEVICE_NAME)) {
         Serial.println("failed to connect and hit timeout");
         delay(3000);
         //reset and try again, or maybe put it to deep sleep
@@ -52,7 +57,12 @@ void initWIFI()
     // if you get here you have connected to the WiFi
     WiFi.setAutoReconnect(true);
     WiFi.persistent(true);
-    Serial.println("WIFI connected.\n");
+    
+    Serial.println("WIFI connected. IP address: " + WiFi.localIP().toString());
+    Serial.println("DHCP hostname: " + WiFi.hostname());
+    Serial.println("mDNS name: " + String(WIFI_MDNS_NAME) + ".local");
+    Serial.println("Config site: http://" + WiFi.localIP().toString() + "/");
+
     Serial.println(String("finished function ") + __PRETTY_FUNCTION__);
 }
 
