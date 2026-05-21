@@ -2,13 +2,15 @@
 #include "webserver.h"
 #include "html.h"
 #include "../config/config.h"
+#include "../wireless/wireless.h"
 
 ESP8266WebServer server(80);
 
 void initWebserver()
 {
-    if (MDNS.begin("cellar-fan-control")) // start the mDNS responder for cellar-fan-control.local
+    if (MDNS.begin(WIFI_MDNS_NAME)) // start the mDNS responder for cellar-fan-control.local
     {
+        MDNS.addService("http", "tcp", 80);
         Serial.println("MDNS responder started.");
     }
     else
@@ -35,13 +37,13 @@ void handleRoot()
 
     String content = "<h2>Live Information</h2> <p>" + fanInfo() + "<br />" + humidityInfo() + "<br />" + temperatureInfo() + "<br />" + dewPointInfo() + "<br />" +  stateInfo() + "</p>";
 
-    String measureIntervalFormElement = "Measure Interval: <input type=\"number\" name=\"measureInterval\" value=\"" + String(measureInterval / 1000 / 60) + "\" min=\"1\"> minutes (default: 3 minutes, minimum: 1 minute)<br />";
-    String ventilationIntervalFormElement = "Ventilation Interval: <input type=\"number\" name=\"ventilationInterval\" value=\"" + String(ventilationInterval / 1000 / 60) + "\" min=\"1\"> minutes (default: 60 minutes, minimum: 1 minute)<br />";
-    String waitIntervalFormElement = "Wait Interval: <input type=\"number\" name=\"waitInterval\" value=\"" + String(waitInterval / 1000 / 60) + "\" min=\"1\"> minutes (default: 30 minutes, minimum: 1 minute)<br />";
+    String measureIntervalFormElement = "Measure Interval: <input type=\"number\" name=\"measureInterval\" value=\"" + String(measureInterval / 1000 / 60) + "\" min=\"1\"> minutes (default: " + String(DEFAULT_MEASURE_INTERVAL_MINUTES) + " minutes, minimum: 1 minute)<br />";
+    String ventilationIntervalFormElement = "Ventilation Interval: <input type=\"number\" name=\"ventilationInterval\" value=\"" + String(ventilationInterval / 1000 / 60) + "\" min=\"1\"> minutes (default: " + String(DEFAULT_VENTILATION_INTERVAL_MINUTES) + " minutes, minimum: 1 minute)<br />";
+    String waitIntervalFormElement = "Wait Interval: <input type=\"number\" name=\"waitInterval\" value=\"" + String(waitInterval / 1000 / 60) + "\" min=\"1\"> minutes (default: " + String(DEFAULT_WAIT_INTERVAL_MINUTES) + " minutes, minimum: 1 minute)<br />";
 
-    String dewPointThresholdFormElement = "Dew Point Threshold: <input type=\"number\" name=\"dewPointThreshold\" value=\"" + String(dewPointThreshold) + "\" min=\"2\"> K (default: 4 K, minimum: 2 K, explanation: inside dew point - outside dew point<br />";
-    String minInsideTemperatureCutoffFormElement = "Minimum Inside Cutoff Temperature: <input type=\"number\" name=\"minInsideTemperatureCutoff\" value=\"" + String(minInsideTemperatureCutoff) + "\" min=\"6\"> °C (default: 8 °C, minimum: 6 °C)<br />";
-    String minOutsideTemperatureCutoffFormElement = "Minimum Outside Cutoff Temperature: <input type=\"number\" name=\"minOutsideTemperatureCutoff\" value=\"" + String(minOutsideTemperatureCutoff) + "\" min=\"-272\"> °C (default: -10 °C)<br />";
+    String dewPointThresholdFormElement = "Dew Point Threshold: <input type=\"number\" name=\"dewPointThreshold\" value=\"" + String(dewPointThreshold) + "\" min=\"2\"> K (default: " + String(DEFAULT_DEW_POINT_THRESHOLD) + " K, minimum: 2 K, explanation: inside dew point - outside dew point)<br />";
+    String minInsideTemperatureCutoffFormElement = "Minimum Inside Cutoff Temperature: <input type=\"number\" name=\"minInsideTemperatureCutoff\" value=\"" + String(minInsideTemperatureCutoff) + "\" min=\"6\"> °C (default: " + String(DEFAULT_MIN_INSIDE_TEMPERATURE_CUTOFF) + " °C, minimum: 6 °C)<br />";
+    String minOutsideTemperatureCutoffFormElement = "Minimum Outside Cutoff Temperature: <input type=\"number\" name=\"minOutsideTemperatureCutoff\" value=\"" + String(minOutsideTemperatureCutoff) + "\" min=\"-272\"> °C (default: " + String(DEFAULT_MIN_OUTSIDE_TEMPERATURE_CUTOFF) + " °C)<br />";
 
     String formcontent = measureIntervalFormElement + ventilationIntervalFormElement + waitIntervalFormElement + dewPointThresholdFormElement + minInsideTemperatureCutoffFormElement + minOutsideTemperatureCutoffFormElement;
 

@@ -1,5 +1,6 @@
 // custom include
 #include "sensor_BME280.h"
+#include "../config/config.h"
 
 // library include
 #include <Wire.h>
@@ -8,12 +9,12 @@
 
 Adafruit_BME280 bmeInside, bmeOutside;
 
-unsigned long measureInterval = 3 * 60 * 1000; // in millis, default: 3 min
+unsigned long measureInterval = DEFAULT_MEASURE_INTERVAL_MINUTES * 60UL * 1000UL; // in millis
 unsigned long measurementTimestamp = 0;
 
-int dewPointThreshold = 5;             // in K, default: 5K
-int minInsideTemperatureCutoff = 10;    // in °C, default: 10°C
-int minOutsideTemperatureCutoff = -10; // in °C, default: -10°C
+int dewPointThreshold = DEFAULT_DEW_POINT_THRESHOLD;
+int minInsideTemperatureCutoff = DEFAULT_MIN_INSIDE_TEMPERATURE_CUTOFF;
+int minOutsideTemperatureCutoff = DEFAULT_MIN_OUTSIDE_TEMPERATURE_CUTOFF;
 
 float humidityInside;
 float temperatureInside;

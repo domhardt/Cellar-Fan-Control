@@ -14,6 +14,9 @@
 // for HTTP requests
 #include <ESP8266HTTPClient.h>
 
+extern const char WIFI_DEVICE_NAME[];
+extern const char WIFI_MDNS_NAME[];
+
 extern const String FAN_REQUEST_OFF;
 extern const String FAN_REQUEST_ON;
 extern const String FAN_REQUEST_STATUS;
@@ -25,6 +28,9 @@ extern WiFiClient wifiClient;
 
 void initWIFI();
 void initFans();
+
+// watchdog: periodically ensure WiFi is connected and recover if needed
+void checkWiFi();
 
 int fanPowerStatus(String fanName, String request);
 void fansOn();

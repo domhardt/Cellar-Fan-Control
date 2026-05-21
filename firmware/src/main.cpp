@@ -38,6 +38,7 @@ void setup()
 
 void loop()
 {
-  runFiniteStateMachine();
+  checkWiFi();
   server.handleClient();
+  runFiniteStateMachine();
 }
