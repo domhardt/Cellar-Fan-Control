@@ -2,8 +2,8 @@
 #include "finiteStateMachine.h"
 
 // for state machine
-unsigned long ventilationInterval = 60 * 60 * 1000; // in millis, default: 30 min
-unsigned long waitInterval = 30 * 60 * 1000;        // in millis, default: 90 min
+unsigned long ventilationInterval = 60 * 60 * 1000; // in millis, default: 60 min
+unsigned long waitInterval = 60 * 60 * 1000;        // in millis, default: 60 min
 
 unsigned long stateStartTimeStamp = 0;
 

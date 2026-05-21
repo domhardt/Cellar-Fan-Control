@@ -1,6 +1,7 @@
 // custom include
 #include "webserver.h"
 #include "html.h"
+#include "../config/config.h"
 
 ESP8266WebServer server(80);
 
@@ -99,6 +100,7 @@ void handleForm()
             minOutsideTemperatureCutoff = valueString.toInt();
         }
 
+        saveConfig();
         server.send(200, "text/html", head + link + foot);
     }
 }
