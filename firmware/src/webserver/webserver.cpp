@@ -3,8 +3,12 @@
 #include "html.h"
 #include "../config/config.h"
 #include "../wireless/wireless.h"
+// include for OTA update server
+#include <ESP8266HTTPUpdateServer.h>
+#include "../logging/secrets.h"
 
 ESP8266WebServer server(80);
+ESP8266HTTPUpdateServer httpUpdater;
 
 void initWebserver()
 {
@@ -21,6 +25,15 @@ void initWebserver()
     server.on("/", handleRoot);
     server.on("/save", handleForm);
     server.onNotFound(handleNotFound);
+
+    // Setup web-based OTA update endpoint. LittleFS is initialized in initConfig(), called before initWebserver().
+#ifdef SECRET_OTA_PASSWORD
+    httpUpdater.setup(&server, "/update", "admin", SECRET_OTA_PASSWORD);
+    Serial.println("HTTP OTA update endpoint enabled (authentication: admin / <password>)");
+#else
+    httpUpdater.setup(&server);
+    Serial.println("HTTP OTA update endpoint enabled (no authentication)");
+#endif
 
     server.begin();
     Serial.println("HTTP server started");
